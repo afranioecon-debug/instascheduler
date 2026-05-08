@@ -5,7 +5,7 @@
 
 exports.handler = async (event) => {
   const APP_ID     = process.env.META_APP_ID     || '1653951508988012';
-  const APP_SECRET = process.env.META_APP_SECRET || '0467b00ecb00000dfd4be98dfa7cda75';
+  const APP_SECRET = process.env.META_APP_SECRET;
   const origin     = process.env.URL             || `https://${event.headers.host}`;
   const redirectUri = `${origin}/api/ig-auth-callback`;
 
