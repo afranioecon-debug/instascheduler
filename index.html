@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>InstaScheduler Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --surface2:#18181f; --surface3:#1f1f28;
+    --border:#2a2a38; --border2:#33334a;
+    --text:#f0f0f8; --text2:#9999b8; --text3:#55556a;
+    --primary:#7c6aff; --primary-dim:#7c6aff22; --primary-hover:#9480ff;
+    --pink:#ff6aab; --pink-dim:#ff6aab22;
+    --green:#2dda8b; --green-dim:#2dda8b22;
+    --red:#ff4f6a; --red-dim:#ff4f6a22;
+    --orange:#ff9a3c; --orange-dim:#ff9a3c22;
+    --radius:12px; --radius-sm:8px; --sidebar-w:240px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6}
+  h1,h2,h3,h4{font-family:'Syne',sans-serif;line-height:1.2}
+  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+  /* Layout */
+  #app{display:flex;height:100vh;overflow:hidden}
+  .hidden{display:none!important}
+  #app.hidden{display:none!important}
+
+  /* Sidebar */
+  .sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:transform .3s}
+  .sidebar-logo{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+  .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--pink));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .logo-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+  .logo-sub{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+  .sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;color:var(--text2);font-weight:500;font-size:13.5px;border:1px solid transparent;user-select:none}
+  .nav-item:hover{background:var(--surface2);color:var(--text)}
+  .nav-item.active{background:var(--primary-dim);color:var(--primary);border-color:#7c6aff33}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0}
+  .sidebar-footer{padding:12px 10px 16px;border-top:1px solid var(--border)}
+  .worker-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--surface2);font-size:12px;color:var(--text2)}
+  .worker-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+  .topbar-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600}
+  .page-content{flex:1;overflow-y:auto;padding:28px}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:'DM Sans',sans-serif;line-height:1;white-space:nowrap}
+  .btn svg{width:14px;height:14px;flex-shrink:0}
+  .btn-primary{background:var(--primary);color:#fff} .btn-primary:hover{background:var(--primary-hover)}
+  .btn-ghost{background:transparent;color:var(--text2);border-color:var(--border)} .btn-ghost:hover{background:var(--surface2);color:var(--text)}
+  .btn-danger{background:var(--red-dim);color:var(--red);border-color:#ff4f6a33} .btn-danger:hover{background:#ff4f6a33}
+  .btn-sm{padding:6px 12px;font-size:12px} .btn-lg{padding:11px 22px;font-size:14px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-ig{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);color:#fff;border:none} .btn-ig:hover{opacity:.9}
+  .btn-ig:disabled{opacity:.6;cursor:not-allowed}
+
+  /* Cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .card-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .card-body{padding:20px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+
+  /* Metrics */
+  .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:border-color .2s}
+  .metric-card:hover{border-color:var(--border2)}
+  .metric-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+  .metric-value{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1}
+  .metric-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px}
+
+  /* Status badges */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600}
+  .badge-scheduled{background:var(--primary-dim);color:var(--primary)}
+  .badge-published{background:var(--green-dim);color:var(--green)}
+  .badge-error{background:var(--red-dim);color:var(--red)}
+  .badge-cancelled{background:#333;color:var(--text3)}
+
+  /* Forms */
+  .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .form-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+  .form-input,.form-select,.form-textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13.5px;padding:9px 12px;outline:none;transition:border-color .15s;width:100%}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim)}
+  .form-textarea{resize:vertical;min-height:80px;line-height:1.5}
+  .form-select{cursor:pointer} .form-select option{background:var(--surface2)}
+
+  /* Table */
+  .table{width:100%;border-collapse:collapse}
+  .table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+  .table td{padding:12px 14px;border-bottom:1px solid #2a2a3880;vertical-align:middle;font-size:13px}
+  .table tr:last-child td{border-bottom:none}
+  .table tr:hover td{background:#18181f50}
+
+  /* Avatar */
+  .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;color:#fff;flex-shrink:0}
+  .avatar-sm{width:32px;height:32px;font-size:13px}
+  .avatar-md{width:40px;height:40px;font-size:16px}
+  .avatar-lg{width:52px;height:52px;font-size:20px}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:#000000bb;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;animation:fadeIn .15s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;animation:slideUp .2s ease}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-lg{max-width:620px}
+  .modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+  .modal-body{padding:24px;overflow-y:auto;flex:1}
+  .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0}
+  .close-btn{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:18px;flex-shrink:0}
+  .close-btn:hover{background:var(--surface3);color:var(--text)}
+
+  /* Calendar */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .cal-header-cell{background:var(--surface2);padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+  .cal-cell{background:var(--surface);padding:8px;min-height:80px;cursor:pointer;transition:background .1s;position:relative;overflow:hidden}
+  .cal-cell:hover{background:var(--surface2)}
+  .cal-cell.today{background:var(--primary-dim)}
+  .cal-cell.other-month .cal-day-num{color:var(--text3)}
+  .cal-day-num{font-size:13px;font-weight:600;margin-bottom:4px}
+  .cal-cell.today .cal-day-num{color:var(--primary)}
+  .cal-post-item{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:500;margin-top:2px;padding:2px 4px;border-radius:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+  /* Toast */
+  .toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+  .toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;box-shadow:0 8px 30px #00000060;animation:slideIn .25s ease;pointer-events:all;max-width:340px}
+  @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+  .toast-success{border-color:#2dda8b44} .toast-error{border-color:#ff4f6a44} .toast-info{border-color:#7c6aff44}
+
+  /* Color picker */
+  .color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s}
+  .color-dot.selected{border-color:#fff;transform:scale(1.2)}
+
+  /* Upload */
+  .upload-area{border:2px dashed var(--border2);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+  .upload-area:hover,.upload-area.drag-over{border-color:var(--primary);background:var(--primary-dim)}
+
+  /* Step indicator */
+  .step-indicator{display:flex;align-items:center;gap:0;margin-bottom:24px}
+  .step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:var(--surface2);border:2px solid var(--border);color:var(--text3);flex-shrink:0;z-index:1}
+  .step-dot.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  .step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+  .step-line{flex:1;height:2px;background:var(--border)} .step-line.done{background:var(--green)}
+
+  /* Misc */
+  .divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+  .text-muted{color:var(--text2)} .text-dim{color:var(--text3)}
+  .text-primary{color:var(--primary)} .text-green{color:var(--green)} .text-red{color:var(--red)}
+  .text-sm{font-size:12px} .text-xs{font-size:11px}
+  .font-bold{font-weight:700} .font-semibold{font-weight:600}
+  .mt-1{margin-top:4px} .mt-2{margin-top:8px} .mt-4{margin-top:16px}
+  .mb-2{margin-bottom:8px} .mb-4{margin-bottom:16px}
+  .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .w-full{width:100%}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:12px;text-align:center}
+  .post-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);transition:border-color .15s}
+  .post-card:hover{border-color:var(--border2)}
+  .post-thumb{width:44px;height:44px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:18px}
+  .post-thumb img{width:100%;height:100%;object-fit:cover}
+  .info-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .section-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+  .section-sub{color:var(--text2);font-size:13px;margin-top:3px}
+  .space-y>*+*{margin-top:16px} .space-y-sm>*+*{margin-top:10px}
+  .sidebar-toggle{display:none;background:none;border:none;color:var(--text2);cursor:pointer;padding:6px}
+
+  /* OAuth connecting overlay */
+  .oauth-overlay{position:fixed;inset:0;background:#000000cc;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:2000}
+  .oauth-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 32px;text-align:center;max-width:380px;width:100%}
+  .oauth-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Login */
+  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9000}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 40px;max-width:400px;width:100%;text-align:center}
+  .login-logo{width:72px;height:72px;background:linear-gradient(135deg,var(--primary),var(--pink));border-radius:20px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:32px}
+
+  @media(max-width:768px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-toggle{display:flex}
+    .grid-5{grid-template-columns:repeat(2,1fr)}
+    .grid-2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">📸</div>
+    <h1 style="font-size:26px;font-weight:800;margin-bottom:8px">InstaScheduler Pro</h1>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:32px;line-height:1.6">
+      Gerencie e agende postagens no Instagram para todos os seus clientes em um só lugar.
+    </p>
+    <button class="btn btn-primary btn-lg w-full" onclick="handleLogin()" style="justify-content:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Entrar na Plataforma
+    </button>
+    <p class="text-dim text-xs mt-4">App ID: 1653951508988012</p>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div id="app" class="hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📸</div>
+      <div><div class="logo-text">InstaScheduler</div><div class="logo-sub">Pro Platform</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" data-page="clients" onclick="navigate('clients')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Clientes</span>
+      </div>
+      <div class="nav-item" data-page="newpost" onclick="navigate('newpost')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>Nova Postagem</span>
+      </div>
+      <div class="nav-item" data-page="calendar" onclick="navigate('calendar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Calendário</span>
+      </div>
+      <div class="nav-item" data-page="history" onclick="navigate('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Histórico</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="worker-status">
+        <div class="worker-dot"></div>
+        <span>Worker ativo · 60s</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-top:6px">
+        <div class="avatar avatar-sm" id="user-avatar" style="background:var(--primary)">A</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600" id="user-name">Admin</div>
+          <div class="text-dim" style="font-size:11px">admin@platform.io</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="handleLogout()" style="padding:4px 8px;font-size:11px">Sair</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title" id="page-title">Dashboard</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="navigate('newpost')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova Postagem
+      </button>
+    </header>
+    <main class="page-content" id="page-content"></main>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div id="modal-root"></div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+const META_APP_ID = '1653951508988012';
+const GRAPH_BASE  = 'https://graph.instagram.com/v21.0';
+const DB_KEY      = 'instascheduler_v2';
+const COLORS      = ['#7c6aff','#ff6aab','#2dda8b','#ff9a3c','#ffd166','#06b6d4','#f43f5e','#8b5cf6','#22c55e','#3b82f6'];
+const STATUS_COLORS = { scheduled:'var(--primary)', published:'var(--green)', error:'var(--red)', cancelled:'var(--text3)' };
+
+// ─── State ────────────────────────────────────────────────────────────────────
+function loadDB() { try { const r=localStorage.getItem(DB_KEY); return r?JSON.parse(r):null; } catch{return null;} }
+function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(state)); }
+
+let state = {
+  user: null, clients: [], accounts: [], posts: [],
+  nextClientId: 1, nextAccountId: 1, nextPostId: 1,
+  ...(loadDB() || {})
+};
+
+// ─── Router ───────────────────────────────────────────────────────────────────
+let currentPage = 'dashboard', pageParams = {};
+
+function navigate(page, params={}) {
+  currentPage = page; pageParams = params;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
+  const titles = {dashboard:'Dashboard',clients:'Clientes',newpost:'Nova Postagem',calendar:'Calendário',history:'Histórico',clientdetail:'Detalhe do Cliente'};
+  document.getElementById('page-title').textContent = titles[page] || page;
+  renderPage();
+  if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+function handleLogin() {
+  state.user = { id:1, name:'Admin', email:'admin@platform.io' };
+  saveDB();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name').textContent = state.user.name;
+  document.getElementById('user-avatar').textContent = state.user.name[0];
+  navigate('dashboard');
+}
+function handleLogout() {
+  state.user = null; saveDB();
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  const icon = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+  el.innerHTML = '<span style="font-size:16px;flex-shrink:0">'+icon+'</span><span>'+msg+'</span>';
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function showModal(html) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = html;
+  overlay.addEventListener('click', e => { if(e.target===overlay) closeModal(); });
+  document.getElementById('modal-root').appendChild(overlay);
+}
+function closeModal() {
+  const root = document.getElementById('modal-root');
+  if (root.lastChild) root.lastChild.remove();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtDate(ts) { return new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function fmtDateShort(ts) { return new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
+function fmtTime(ts) { return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function getClient(id) { return state.clients.find(c=>c.id===id); }
+function getAccount(id) { return state.accounts.find(a=>a.id===id); }
+function statusBadge(s) {
+  const m = {scheduled:['badge-scheduled','Agendado'],published:['badge-published','Publicado'],error:['badge-error','Erro'],cancelled:['badge-cancelled','Cancelado']};
+  const [cls,lbl] = m[s]||['badge-cancelled',s];
+  return '<span class="badge '+cls+'">'+lbl+'</span>';
+}
+function colorPicker(selected, fn) {
+  return '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    COLORS.map(c=>'<div class="color-dot'+(c===selected?' selected':'')+'" style="background:'+c+'" onclick="'+fn+'(\''+c+'\')"></div>').join('')+
+  '</div>';
+}
+
+// ─── Instagram OAuth ──────────────────────────────────────────────────────────
+// Checks on page load if we came back from the OAuth callback
+function checkOAuthResult() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('oauth_result');
+  if (!raw) return;
+
+  // Clean URL immediately
+  window.history.replaceState({}, '', window.location.pathname);
+
+  try {
+    const result = JSON.parse(raw);
+
+    if (result.error) {
+      toast('Erro ao conectar Instagram: ' + result.error, 'error');
+      if (result.clientId) navigate('clientdetail', { clientId: parseInt(result.clientId) });
+      return;
+    }
+
+    if (result.success && result.igUserId && result.username) {
+      // Prevent duplicate
+      const existing = state.accounts.find(a => a.instagramUserId === result.igUserId);
+      if (existing) {
+        toast('@' + result.username + ' já está conectado!', 'info');
+      } else {
+        state.accounts.push({
+          id: state.nextAccountId++,
+          clientId: parseInt(result.clientId),
+          ownerId: 1,
+          instagramUserId: result.igUserId,
+          username: result.username,
+          accessToken: result.token,
+          tokenExpiresAt: Date.now() + parseInt(result.expiresIn||'5184000') * 1000,
+          profilePicUrl: result.picUrl || null,
+          followersCount: parseInt(result.followers || '0'),
+          isActive: 'yes',
+          createdAt: Date.now(),
+        });
+        saveDB();
+        toast('✅ @' + result.username + ' conectado com sucesso!');
+      }
+      navigate('clientdetail', { clientId: parseInt(result.clientId) });
+    }
+  } catch(e) {
+    toast('Erro ao processar retorno OAuth', 'error');
+  }
+}
+
+// Starts the real Meta OAuth flow
+function startOAuth(clientId) {
+  // Check if we're on Netlify (has the function)
+  const isNetlify = window.location.hostname.includes('.netlify.app') || window.location.hostname.includes('.netlify.com');
+  const hasLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  if (isNetlify || hasLocalServer) {
+    // Real OAuth: redirect to our Netlify function
+    window.location.href = '/api/ig-auth-start?clientId=' + clientId;
+  } else {
+    // Fallback: open Meta token generator in new tab + manual paste
+    showManualTokenModal(clientId);
+  }
+}
+
+// Manual token entry fallback (used when not hosted on Netlify)
+function showManualTokenModal(clientId) {
+  showModal(`
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">🔗 Conectar Conta Instagram</h3>
+        <button class="close-btn" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Easy mode: token field + auto-fetch -->
+        <div style="background:linear-gradient(135deg,#7c6aff15,#ff6aab15);border:1px solid var(--primary)33;border-radius:var(--radius-sm);padding:16px;margin-bottom:20px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px">⚡ Conectar com Access Token</div>
+          <p class="text-dim text-sm" style="margin-bottom:12px">Cole o Access Token da conta Instagram Business. Os dados do perfil serão carregados automaticamente.</p>
+          <div class="form-group" style="margin-bottom:8px">
+            <label class="form-label">Access Token</label>
+            <textarea class="form-textarea" id="ig-token" rows="2" placeholder="EAAxxxxxxxxxxxxxxx..."></textarea>
+          </div>
+          <button class="btn btn-ig w-full" style="justify-content:center;padding:11px" id="ig-fetch-btn" onclick="fetchAndConnect(${clientId})">
+            📸 Carregar perfil e conectar
+          </button>
+        </div>
+
+        <!-- Status area -->
+        <div id="ig-status" style="display:none"></div>
+
+        <details style="margin-top:8px">
+          <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-weight:600;padding:8px 0">Como obter o Access Token?</summary>
+          <div style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.7;background:var(--surface2);padding:12px;border-radius:var(--radius-sm)">
+            <b>Opção 1 — Graph API Explorer (mais fácil):</b><br>
+            1. Acesse <a href="https://developers.facebook.com/tools/explorer" target="_blank" style="color:var(--primary)">developers.facebook.com/tools/explorer</a><br>
+            2. Selecione seu app (ID: ${META_APP_ID})<br>
+            3. Clique em <b>Generate Access Token</b> e autorize<br>
+            4. Copie o token gerado e cole aqui<br><br>
+            <b>Opção 2 — Via Instagram Basic Display:</b><br>
+            O token do cliente pode ser gerado pelo fluxo OAuth ao hospedar em Netlify.
+          </div>
+        </details>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      </div>
+    </div>
+  `);
+}
+
+async function fetchAndConnect(clientId) {
+  const token = document.getElementById('ig-token')?.value.trim();
+  if (!token) { toast('Cole o Access Token primeiro', 'error'); return; }
+
+  const btn = document.getElementById('ig-fetch-btn');
+  const statusEl = document.getElementById('ig-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando perfil...';
+  statusEl.style.display = 'none';
+
+  try {
+    const resp = await fetch(GRAPH_BASE + '/me?fields=id,username,profile_picture_url,followers_count&access_token=' + token);
+    const profile = await resp.json();
+
+    if (profile.error) {
+      statusEl.innerHTML = '<div style="background:var(--red-dim);border:1px solid #ff4f6a33;border-radius:var(--radius-sm);padding:12px;color:var(--red);font-size:13px">❌ '+(profile.error.message||'Token inválido')+'</div>';
+      statusEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '📸 Tentar novamente';
+      return;
+    }
+
+    if (!profile.id || !profile.username) {
+      throw new Error('Perfil não encontrado. Verifique se o token é de uma conta Business.');
+    }
+
+    // Duplicate check
+    if (state.accounts.find(a => a.instagramUserId === profile.id && a.clientId === clientId)) {
+      toast('@' + profile.username + ' já está conectado a este cliente', 'error');
+      btn.disabled = false;
+      btn.textContent = '📸 Carregar perfil e conectar';
+      return;
+    }
+
+    // Show preview
+    statusEl.innerHTML = `
+      <div style="background:var(--green-dim);border:1px solid #2dda8b44;border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:12px">
+        <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+          ${profile.profile_picture_url ? '<img src="'+profile.profile_picture_url+'" style="width:100%;height:100%;object-fit:cover"/>' : '📸'}
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:15px;color:var(--green)">✅ @${profile.username}</div>
+          <div style="font-size:11px;color:var(--text2)">ID: ${profile.id} · ${(profile.followers_count||0).toLocaleString('pt-BR')} seguidores</div>
+        </div>
+      </div>`;
+    statusEl.style.display = 'block';
+
+    // Save account
+    state.accounts.push({
+      id: state.nextAccountId++,
+      clientId,
+      ownerId: 1,
+      instagramUserId: profile.id,
+      username: profile.username,
+      accessToken: token,
+      tokenExpiresAt: Date.now() + 60*24*3600*1000,
+      profilePicUrl: profile.profile_picture_url || null,
+      followersCount: profile.followers_count || 0,
+      isActive: 'yes',
+      createdAt: Date.now(),
+    });
+    saveDB();
+
+    toast('✅ @' + profile.username + ' conectado!');
+    setTimeout(() => { closeModal(); navigate('clientdetail', { clientId }); }, 1200);
+
+  } catch(err) {
+    statusEl.innerHTML = '<div style="background:var(--red-dim);border:1px solid #ff4f6a33;border-radius:var(--radius-sm);padding:12px;color:var(--red);font-size:13px">❌ ' + err.message + '</div>';
+    statusEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '📸 Tentar novamente';
+  }
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const stats = {
+    clients: state.clients.length,
+    accounts: state.accounts.length,
+    scheduled: state.posts.filter(p=>p.status==='scheduled').length,
+    published: state.posts.filter(p=>p.status==='published').length,
+    errors: state.posts.filter(p=>p.status==='error').length,
+  };
+  const upcoming = state.posts.filter(p=>p.status==='scheduled').sort((a,b)=>a.scheduledAt-b.scheduledAt).slice(0,5);
+  const recentClients = state.clients.slice(0,5);
+
+  const metrics = [
+    {label:'Clientes',value:stats.clients,icon:'👥',color:'var(--primary)',bg:'var(--primary-dim)'},
+    {label:'Contas Instagram',value:stats.accounts,icon:'📸',color:'var(--pink)',bg:'var(--pink-dim)'},
+    {label:'Agendadas',value:stats.scheduled,icon:'📅',color:'#60a5fa',bg:'#3b82f622'},
+    {label:'Publicadas',value:stats.published,icon:'✅',color:'var(--green)',bg:'var(--green-dim)'},
+    {label:'Com Erro',value:stats.errors,icon:'⚠️',color:'var(--red)',bg:'var(--red-dim)'},
+  ];
+
+  return `<div class="space-y">
+    <div class="section-header">
+      <div><h1 class="section-title">Dashboard</h1>
+      <p class="section-sub">Bem-vindo, ${state.user?.name?.split(' ')[0]||'Admin'}.</p></div>
+    </div>
+    <div class="grid-5">
+      ${metrics.map(m=>`<div class="metric-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="metric-label">${m.label}</div>
+          <div class="metric-icon" style="background:${m.bg}"><span style="color:${m.color}">${m.icon}</span></div>
+        </div>
+        <div class="metric-value" style="color:${m.color}">${m.value}</div>
+      </div>`).join('')}
+    </div>
+    <div class="grid-2" style="gap:20px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⏰ Próximas Postagens</div></div>
+        <div class="card-body">
+          ${upcoming.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:.3">📭</div><p class="text-muted">Nenhuma postagem agendada</p><button class="btn btn-ghost btn-sm" onclick="navigate('newpost')">Agendar agora</button></div>`:
+          upcoming.map(p=>{
+            const acc=getAccount(p.accountId);
+            return `<div class="post-card" style="margin-bottom:8px">
+              <div class="post-thumb">${p.mediaUrl&&p.mediaUrl.startsWith('data:')?'<img src="'+p.mediaUrl+'" />':'<span>'+(p.mediaType==='video'?'🎬':p.mediaType==='stories'?'📱':'🖼️')+'</span>'}</div>
+              <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500" class="truncate">${p.caption||'(sem legenda)'}</div>
+              <div class="text-dim text-xs mt-1">${fmtDate(p.scheduledAt)} · @${acc?.username||'?'}</div></div>
+              ${statusBadge(p.status)}</div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">👥 Clientes Recentes</div><button class="btn btn-ghost btn-sm" onclick="navigate('clients')">Ver todos</button></div>
+        <div class="card-body">
+          ${recentClients.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:.3">👤</div><p class="text-muted">Nenhum cliente</p><button class="btn btn-ghost btn-sm" onclick="navigate('clients')">Adicionar</button></div>`:
+          recentClients.map(c=>{
+            const accs=state.accounts.filter(a=>a.clientId===c.id).length;
+            const posts=state.posts.filter(p=>p.clientId===c.id).length;
+            return `<div class="post-card" style="margin-bottom:8px;cursor:pointer" onclick="navigate('clientdetail',{clientId:${c.id}})">
+              <div class="avatar avatar-md" style="background:${c.avatarColor||COLORS[0]}">${c.name[0].toUpperCase()}</div>
+              <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${c.name}</div><div class="text-dim text-xs">${c.email||'Sem e-mail'}</div></div>
+              <div style="text-align:right;flex-shrink:0"><div class="text-sm" style="color:var(--pink)">📸 ${accs}</div><div class="text-xs text-dim">📝 ${posts}</div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Atividade Recente</div><button class="btn btn-ghost btn-sm" onclick="navigate('history')">Ver histórico</button></div>
+      <div class="card-body" style="padding:0">
+        ${state.posts.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:.3">📋</div><p class="text-muted">Nenhuma atividade</p></div>`:`
+        <table class="table"><thead><tr><th>Postagem</th><th>Cliente</th><th>Conta</th><th>Agendado</th><th>Status</th></tr></thead>
+        <tbody>${state.posts.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,8).map(p=>{
+          const client=getClient(p.clientId); const acc=getAccount(p.accountId);
+          return `<tr>
+            <td><div style="display:flex;align-items:center;gap:8px"><div class="post-thumb" style="width:32px;height:32px;border-radius:6px;font-size:14px">${p.mediaUrl&&p.mediaUrl.startsWith('data:')?'<img src="'+p.mediaUrl+'"/>':'<span>'+(p.mediaType==='video'?'🎬':'🖼️')+'</span>'}</div><span class="truncate" style="max-width:160px">${p.caption||'(sem legenda)'}</span></div></td>
+            <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar avatar-sm" style="background:${client?.avatarColor||COLORS[0]}">${client?.name[0]||'?'}</div><span>${client?.name||'—'}</span></div></td>
+            <td><span class="text-muted">@${acc?.username||'?'}</span></td>
+            <td class="text-dim">${fmtDateShort(p.scheduledAt)}</td>
+            <td>${statusBadge(p.status)}</td>
+          </tr>`;
+        }).join('')}</tbody></table>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── CLIENTS ──────────────────────────────────────────────────────────────────
+window._clientSearch = '';
+
+function renderClients() {
+  const search = window._clientSearch||'';
+  const filtered = state.clients.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())||(c.email||'').toLowerCase().includes(search.toLowerCase()));
+  return `<div>
+    <div class="section-header">
+      <div><h1 class="section-title">Clientes</h1><p class="section-sub">${state.clients.length} cliente(s)</p></div>
+      <button class="btn btn-primary" onclick="showCreateClientModal()">+ Novo Cliente</button>
+    </div>
+    <div style="margin-bottom:16px"><input class="form-input" placeholder="🔍 Buscar clientes..." value="${search}" oninput="window._clientSearch=this.value;renderPage()" style="max-width:320px"/></div>
+    ${filtered.length===0?`<div class="empty-state" style="padding:64px"><div style="font-size:40px;opacity:.3">👥</div><p class="text-muted">${search?'Nenhum encontrado':'Nenhum cliente ainda'}</p>${!search?'<button class="btn btn-primary btn-sm" onclick="showCreateClientModal()">Criar cliente</button>':''}</div>`:`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+      ${filtered.map(c=>{
+        const accs=state.accounts.filter(a=>a.clientId===c.id).length;
+        const sched=state.posts.filter(p=>p.clientId===c.id&&p.status==='scheduled').length;
+        const total=state.posts.filter(p=>p.clientId===c.id).length;
+        return `<div class="card" style="cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'" onclick="navigate('clientdetail',{clientId:${c.id}})">
+          <div class="card-body">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="avatar avatar-lg" style="background:${c.avatarColor||COLORS[0]}">${c.name[0].toUpperCase()}</div>
+                <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">${c.name}</div>
+                ${c.email?'<div class="text-dim text-sm">'+c.email+'</div>':''}
+                ${c.phone?'<div class="text-dim text-xs">'+c.phone+'</div>':''}</div>
+              </div>
+              <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+                <button class="btn btn-ghost btn-sm" onclick="showEditClientModal(${c.id})">✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDeleteClient(${c.id})">🗑️</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px;border-top:1px solid var(--border)">
+              <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--pink)">${accs}</div><div class="text-xs text-dim">Contas</div></div>
+              <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--primary)">${sched}</div><div class="text-xs text-dim">Agendadas</div></div>
+              <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">${total}</div><div class="text-xs text-dim">Total</div></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}
+  </div>`;
+}
+
+// ─── CLIENT DETAIL ────────────────────────────────────────────────────────────
+function renderClientDetail(clientId) {
+  const client = getClient(clientId);
+  if (!client) return '<p>Cliente não encontrado</p>';
+  const accounts = state.accounts.filter(a=>a.clientId===clientId);
+  const posts = state.posts.filter(p=>p.clientId===clientId).sort((a,b)=>b.createdAt-a.createdAt);
+
+  return `<div class="space-y">
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:16px">
+        <button class="btn btn-ghost btn-sm" onclick="navigate('clients')">← Voltar</button>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="avatar avatar-lg" style="background:${client.avatarColor||COLORS[0]}">${client.name[0].toUpperCase()}</div>
+          <div><h1 class="section-title">${client.name}</h1><p class="section-sub">${client.email||''} ${client.phone?'· '+client.phone:''}</p></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="showEditClientModal(${clientId})">✏️ Editar</button>
+        <button class="btn btn-primary" onclick="navigate('newpost',{clientId:${clientId}})">+ Nova postagem</button>
+      </div>
+    </div>
+
+    <!-- Instagram Accounts -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📸 Contas Instagram</div>
+        <button class="btn btn-ig btn-sm" onclick="startOAuth(${clientId})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Conectar Instagram
+        </button>
+      </div>
+      <div class="card-body">
+        ${accounts.length===0?`<div class="empty-state" style="padding:32px">
+          <div style="font-size:40px;opacity:.3">📸</div>
+          <p class="text-muted">Nenhuma conta conectada</p>
+          <p class="text-dim text-sm" style="max-width:320px;text-align:center">Clique em <strong>Conectar Instagram</strong> para adicionar uma conta Business ou Creator do cliente.</p>
+          <button class="btn btn-ig" onclick="startOAuth(${clientId})">🔗 Conectar conta Instagram</button>
+        </div>`:`
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${accounts.map(acc=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border)">
+              <div style="width:46px;height:46px;border-radius:50%;overflow:hidden;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+                ${acc.profilePicUrl?'<img src="'+acc.profilePicUrl+'" style="width:100%;height:100%;object-fit:cover"/>'+'':'📸'}
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:14px">@${acc.username}</div>
+                <div class="text-dim text-xs">${(acc.followersCount||0).toLocaleString('pt-BR')} seguidores · ID: ${acc.instagramUserId}</div>
+                <div style="font-size:11px;margin-top:3px;color:${acc.isActive==='yes'?'var(--green)':'var(--red)'}">${acc.isActive==='yes'?'● Ativa':'● Inativa'}</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-shrink:0">
+                <button class="btn btn-ghost btn-sm" onclick="toggleAccountStatus(${acc.id})">${acc.isActive==='yes'?'Desativar':'Ativar'}</button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDisconnectAccount(${acc.id})">Desconectar</button>
+              </div>
+            </div>`).join('')}
+        </div>`}
+      </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 Postagens</div><span class="info-chip">${posts.length} total</span></div>
+      <div class="card-body" style="padding:0">
+        ${posts.length===0?`<div class="empty-state"><div style="font-size:40px;opacity:.3">📝</div><p class="text-muted">Nenhuma postagem</p><button class="btn btn-primary btn-sm" onclick="navigate('newpost',{clientId:${clientId}})">Criar postagem</button></div>`:`
+        <table class="table">
+          <thead><tr><th>Mídia</th><th>Caption</th><th>Conta</th><th>Agendado</th><th>Status</th><th></th></tr></thead>
+          <tbody>${posts.map(p=>{
+            const acc=getAccount(p.accountId);
+            return `<tr>
+              <td><div class="post-thumb" style="width:36px;height:36px;font-size:16px">${p.mediaUrl&&p.mediaUrl.startsWith('data:')?'<img src="'+p.mediaUrl+'"/>':'<span>'+(p.mediaType==='video'?'🎬':p.mediaType==='stories'?'📱':'🖼️')+'</span>'}</div></td>
+              <td><span class="truncate" style="display:block;max-width:200px">${p.caption||'(sem legenda)'}</span></td>
+              <td class="text-muted">@${acc?.username||'?'}</td>
+              <td class="text-dim">${fmtDate(p.scheduledAt)}</td>
+              <td>${statusBadge(p.status)}</td>
+              <td><div style="display:flex;gap:4px">
+                ${p.status==='scheduled'?'<button class="btn btn-ghost btn-sm" onclick="publishNow('+p.id+')">▶ Agora</button>':''}
+                <button class="btn btn-danger btn-sm" onclick="deletePost('+p.id+')">🗑️</button>
+              </div></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`}
+      </div>
+    </div>
+    ${client.notes?`<div class="card"><div class="card-header"><div class="card-title">📝 Observações</div></div><div class="card-body"><p style="color:var(--text2);line-height:1.7">${client.notes}</p></div></div>`:''}
+  </div>`;
+}
+
+// ─── NEW POST ─────────────────────────────────────────────────────────────────
+window._np = { step:1, mediaType:'image', clientId:null, accountId:null, mediaUrl:null, mediaPreview:null, caption:'', hashtags:'', scheduledAt:'', publishNow:false };
+
+function renderNewPost() {
+  const np = window._np;
+  if (pageParams.clientId && !np._init) { np.clientId = pageParams.clientId; np._init = true; }
+  const selectedClient = np.clientId ? getClient(np.clientId) : null;
+  const accounts = np.clientId ? state.accounts.filter(a=>a.clientId===np.clientId&&a.isActive==='yes') : [];
+  const defaultDate = new Date(Date.now()+3600000).toISOString().slice(0,16);
+
+  return `<div style="max-width:680px;margin:0 auto">
+    <div class="section-header"><div><h1 class="section-title">Nova Postagem</h1><p class="section-sub">Crie e agende para o Instagram</p></div></div>
+    <div class="step-indicator">
+      ${[1,2,3].map((s,i)=>'<div class="step-dot '+(np.step>s?'done':np.step===s?'active':'')+'">'+(np.step>s?'✓':s)+'</div>'+(i<2?'<div class="step-line '+(np.step>s+1||np.step>s?'done':'')+'"></div>':'')).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:24px;font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em">
+      <span>Tipo & Mídia</span><span>Conteúdo</span><span>Agendar</span>
+    </div>
+    ${np.step===1?renderNewPostStep1(np,accounts):np.step===2?renderNewPostStep2(np,selectedClient,accounts):renderNewPostStep3(np,selectedClient,accounts,defaultDate)}
+  </div>`;
+}
+
+function renderNewPostStep1(np, accounts) {
+  return `<div class="card"><div class="card-body">
+    <div class="form-group">
+      <label class="form-label">Tipo de Post</label>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${[['image','🖼️','Post (Foto)'],['video','🎬','Vídeo/Reel'],['stories','📱','Story'],['carousel','🎠','Carrossel']].map(([v,icon,lbl])=>
+          '<div class="btn btn-ghost'+(np.mediaType===v?' btn-primary':'')+'" style="justify-content:center;flex-direction:column;gap:4px;padding:12px 8px;height:auto" onclick="window._np.mediaType=\''+v+'\';renderPage()"><span style="font-size:20px">'+icon+'</span><span style="font-size:11px">'+lbl+'</span></div>'
+        ).join('')}
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cliente</label>
+      <select class="form-select" onchange="window._np.clientId=this.value?parseInt(this.value):null;window._np.accountId=null;renderPage()">
+        <option value="">Selecionar cliente...</option>
+        ${state.clients.map(c=>'<option value="'+c.id+'" '+(np.clientId===c.id?'selected':'')+'>'+c.name+'</option>').join('')}
+      </select>
+    </div>
+    ${np.clientId?`<div class="form-group">
+      <label class="form-label">Conta Instagram</label>
+      ${accounts.length===0?`<div style="padding:12px;background:var(--red-dim);border:1px solid var(--red)33;border-radius:var(--radius-sm);color:var(--red);font-size:13px">⚠️ Sem contas ativas. <a href="#" onclick="navigate('clientdetail',{clientId:${np.clientId}});return false" style="color:var(--primary)">Conectar conta</a></div>`:
+      `<select class="form-select" onchange="window._np.accountId=parseInt(this.value)||null">
+        <option value="">Selecionar conta...</option>
+        ${accounts.map(a=>'<option value="'+a.id+'" '+(np.accountId===a.id?'selected':'')+'>@'+a.username+'</option>').join('')}
+      </select>`}
+    </div>`:''}
+    <div class="form-group">
+      <label class="form-label">Mídia</label>
+      <div style="border:2px dashed var(--border2);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .2s" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor=''" ondrop="handleDrop(event)">
+        ${np.mediaPreview?'<img src="'+np.mediaPreview+'" style="max-height:180px;max-width:100%;border-radius:8px;object-fit:contain"/><p class="text-dim text-sm" style="margin-top:8px">Clique para alterar</p>':
+        '<div style="font-size:36px;margin-bottom:8px">📁</div><p style="font-weight:600;margin-bottom:4px">Arraste ou clique para enviar</p><p class="text-dim text-sm">JPG, PNG, MP4 · Máx. 100MB</p>'}
+      </div>
+      <input type="file" id="file-input" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(event)"/>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="goToStep2()" ${!np.clientId||!np.accountId?'disabled':''}>Próximo →</button>
+    </div>
+  </div></div>`;
+}
+
+function renderNewPostStep2(np, selectedClient, accounts) {
+  const acc = getAccount(np.accountId);
+  return `<div class="card"><div class="card-body">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm)">
+      ${np.mediaPreview?'<img src="'+np.mediaPreview+'" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0"/>':`<div style="width:48px;height:48px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:24px">📸</div>`}
+      <div><div style="font-weight:600">${selectedClient?.name} · @${acc?.username}</div><div class="text-dim text-xs">${np.mediaType}</div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Legenda (Caption)</label><textarea class="form-textarea" rows="4" placeholder="Escreva a legenda..." oninput="window._np.caption=this.value">${np.caption}</textarea></div>
+    <div class="form-group"><label class="form-label">Hashtags</label><input class="form-input" placeholder="#hashtag1 #hashtag2" value="${np.hashtags}" oninput="window._np.hashtags=this.value"/><p class="text-dim text-xs">Adicionadas após a legenda automaticamente</p></div>
+    <div style="display:flex;justify-content:space-between">
+      <button class="btn btn-ghost" onclick="window._np.step=1;renderPage()">← Voltar</button>
+      <button class="btn btn-primary" onclick="window._np.step=3;renderPage()">Próximo →</button>
+    </div>
+  </div></div>`;
+}
+
+function renderNewPostStep3(np, selectedClient, accounts, defaultDate) {
+  const acc = getAccount(np.accountId);
+  return `<div class="card"><div class="card-body">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:12px 16px;background:var(--surface2);border-radius:var(--radius-sm)">
+      ${np.mediaPreview?'<img src="'+np.mediaPreview+'" style="width:52px;height:52px;object-fit:cover;border-radius:10px;flex-shrink:0"/>':`<div style="width:52px;height:52px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:26px">📸</div>`}
+      <div><div style="font-weight:600">${selectedClient?.name} · @${acc?.username}</div>
+      <div class="text-dim text-sm">${np.caption?np.caption.slice(0,60)+'...':'(sem legenda)'}</div>
+      ${np.hashtags?'<div class="text-xs" style="color:var(--primary);margin-top:2px">'+np.hashtags+'</div>':''}</div>
+    </div>
+    <div class="form-group"><label class="form-label">Data e Hora de Publicação</label>
+    <input type="datetime-local" class="form-input" value="${np.scheduledAt||defaultDate}" min="${new Date().toISOString().slice(0,16)}" oninput="window._np.scheduledAt=this.value;window._np.publishNow=false;renderPage()"/></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--orange-dim);border:1px solid #ff9a3c33;border-radius:var(--radius-sm);margin-bottom:16px;cursor:pointer" onclick="window._np.publishNow=!window._np.publishNow;renderPage()">
+      <span style="font-size:18px">${np.publishNow?'✅':'⬜'}</span>
+      <div><div style="font-weight:600;font-size:13px;color:var(--orange)">⚡ Publicar Imediatamente</div>
+      <div class="text-dim text-xs">Publica agora via Meta Graph API</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between">
+      <button class="btn btn-ghost" onclick="window._np.step=2;renderPage()">← Voltar</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="resetNewPost()">Cancelar</button>
+        <button class="btn btn-primary" onclick="schedulePost()">${np.publishNow?'⚡ Publicar Agora':'📅 Agendar Postagem'}</button>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function goToStep2() {
+  const np = window._np;
+  if (!np.clientId||!np.accountId) { toast('Selecione cliente e conta','error'); return; }
+  if (!np.mediaUrl) { toast('Adicione uma mídia','error'); return; }
+  np.step=2; renderPage();
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { window._np.mediaUrl=e.target.result; window._np.mediaPreview=e.target.result; renderPage(); };
+  reader.readAsDataURL(file);
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (file) handleFileUpload({ target: { files: [file] } });
+}
+
+function schedulePost() {
+  const np = window._np;
+  if (!np.clientId||!np.accountId) { toast('Selecione cliente e conta','error'); return; }
+  const scheduledAt = np.publishNow ? Date.now() : (np.scheduledAt ? new Date(np.scheduledAt).getTime() : null);
+  if (!scheduledAt&&!np.publishNow) { toast('Selecione data e hora','error'); return; }
+  const post = { id:state.nextPostId++, clientId:np.clientId, accountId:np.accountId, ownerId:1, mediaUrl:np.mediaUrl||'', mediaType:np.mediaType, caption:np.caption||null, hashtags:np.hashtags||null, scheduledAt, status:'scheduled', publishedAt:null, instagramPostId:null, errorMessage:null, createdAt:Date.now(), carouselItems:null };
+  state.posts.push(post);
+  saveDB();
+  if (np.publishNow) { toast('⚡ Publicando...','info'); publishNow(post.id); }
+  else toast('📅 Agendado para '+fmtDate(scheduledAt)+'!');
+  resetNewPost();
+}
+
+function resetNewPost() {
+  window._np = { step:1, mediaType:'image', clientId:null, accountId:null, mediaUrl:null, mediaPreview:null, caption:'', hashtags:'', scheduledAt:'', publishNow:false, _init:false };
+  navigate('dashboard');
+}
+
+// ─── CALENDAR ─────────────────────────────────────────────────────────────────
+window._calDate = new Date(); window._calClient = 'all'; window._calSelectedDay = null;
+
+function renderCalendar() {
+  const d=window._calDate, year=d.getFullYear(), month=d.getMonth();
+  const monthStart=new Date(year,month,1), monthEnd=new Date(year,month+1,0);
+  const monthName=d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const cf=window._calClient;
+  const allPosts=state.posts.filter(p=>{
+    const inM=p.scheduledAt>=monthStart.getTime()&&p.scheduledAt<=monthEnd.getTime();
+    const mC=cf==='all'||p.clientId===parseInt(cf);
+    return inM&&mC;
+  });
+  let firstDow=monthStart.getDay();
+  const totalCells=Math.ceil((firstDow+monthEnd.getDate())/7)*7;
+  const days=[]; for(let i=0;i<totalCells;i++) days.push(new Date(year,month,i-firstDow+1));
+  const today=new Date();
+  const sel=window._calSelectedDay;
+
+  return `<div class="space-y">
+    <div class="section-header">
+      <div><h1 class="section-title">Calendário</h1><p class="section-sub">${allPosts.length} postagem(ns) este mês</p></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="form-select" style="width:180px" onchange="window._calClient=this.value;renderPage()">
+          <option value="all">Todos os clientes</option>
+          ${state.clients.map(c=>'<option value="'+c.id+'" '+(cf===String(c.id)?'selected':'')+'>'+c.name+'</option>').join('')}
+        </select>
+        <button class="btn btn-ghost" onclick="window._calDate=new Date(window._calDate.getFullYear(),window._calDate.getMonth()-1,1);renderPage()">←</button>
+        <span style="font-weight:600;min-width:160px;text-align:center;text-transform:capitalize">${monthName}</span>
+        <button class="btn btn-ghost" onclick="window._calDate=new Date(window._calDate.getFullYear(),window._calDate.getMonth()+1,1);renderPage()">→</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d=>'<div class="cal-header-cell">'+d+'</div>').join('')}
+      ${days.map(day=>{
+        const isToday=day.toDateString()===today.toDateString();
+        const isCurMonth=day.getMonth()===month;
+        const dayPosts=allPosts.filter(p=>new Date(p.scheduledAt).toDateString()===day.toDateString());
+        const isSel=sel&&day.toDateString()===new Date(sel).toDateString();
+        return '<div class="cal-cell'+(isToday?' today':'')+(isCurMonth?'':' other-month')+'" onclick="window._calSelectedDay=\''+day.toISOString()+'\';renderPage()" style="'+(isSel?'box-shadow:inset 0 0 0 2px var(--primary)':'')+'">'+
+          '<div class="cal-day-num">'+day.getDate()+'</div>'+
+          dayPosts.slice(0,3).map(p=>{
+            const client=getClient(p.clientId);
+            const col=client?.avatarColor||'var(--primary)';
+            return '<div class="cal-post-item" style="background:'+col+'22;color:'+col+'"><div class="cal-dot" style="background:'+(STATUS_COLORS[p.status]||col)+'"></div>'+(p.caption?p.caption.slice(0,16)+'…':'(mídia)')+'</div>';
+          }).join('')+
+          (dayPosts.length>3?'<div class="text-xs text-dim" style="margin-top:2px;padding:0 4px">+'+( dayPosts.length-3)+' mais</div>':'')+
+        '</div>';
+      }).join('')}
+    </div>
+    ${sel?`<div class="card"><div class="card-header"><div class="card-title">📅 ${new Date(sel).toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}</div></div>
+    <div class="card-body">${(()=>{
+      const selDate=new Date(sel);
+      const dp=allPosts.filter(p=>new Date(p.scheduledAt).toDateString()===selDate.toDateString());
+      return dp.length===0?'<p class="text-muted">Nenhuma postagem neste dia</p>':dp.map(p=>{
+        const client=getClient(p.clientId); const acc=getAccount(p.accountId);
+        return '<div class="post-card" style="margin-bottom:8px">'+
+          '<div class="post-thumb">'+(p.mediaUrl&&p.mediaUrl.startsWith('data:')?'<img src="'+p.mediaUrl+'"/>':(p.mediaType==='video'?'🎬':'🖼️'))+'</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-weight:500">'+(p.caption||'(sem legenda)')+'</div><div class="text-dim text-xs mt-1">'+fmtTime(p.scheduledAt)+' · '+(client?.name||'?')+' · @'+(acc?.username||'?')+'</div></div>'+
+          statusBadge(p.status)+
+        '</div>';
+      }).join('');
+    })()}</div></div>`:''}
+  </div>`;
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+window._histStatus='all'; window._histClient='all'; window._histSearch='';
+
+function renderHistory() {
+  const sf=window._histStatus, cf=window._histClient, search=window._histSearch;
+  let posts=state.posts.slice().sort((a,b)=>b.scheduledAt-a.scheduledAt);
+  if(sf!=='all') posts=posts.filter(p=>p.status===sf);
+  if(cf!=='all') posts=posts.filter(p=>p.clientId===parseInt(cf));
+  if(search) posts=posts.filter(p=>(p.caption||'').toLowerCase().includes(search.toLowerCase()));
+
+  return `<div class="space-y">
+    <div class="section-header"><div><h1 class="section-title">Histórico</h1><p class="section-sub">${state.posts.length} total</p></div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="form-input" placeholder="🔍 Buscar..." value="${search}" oninput="window._histSearch=this.value;renderPage()" style="flex:1;min-width:200px;max-width:260px"/>
+      <select class="form-select" style="width:160px" onchange="window._histStatus=this.value;renderPage()">
+        <option value="all">Todos status</option>
+        <option value="scheduled" ${sf==='scheduled'?'selected':''}>Agendados</option>
+        <option value="published" ${sf==='published'?'selected':''}>Publicados</option>
+        <option value="error" ${sf==='error'?'selected':''}>Com Erro</option>
+        <option value="cancelled" ${sf==='cancelled'?'selected':''}>Cancelados</option>
+      </select>
+      <select class="form-select" style="width:180px" onchange="window._histClient=this.value;renderPage()">
+        <option value="all">Todos os clientes</option>
+        ${state.clients.map(c=>'<option value="'+c.id+'" '+(cf===String(c.id)?'selected':'')+'>'+c.name+'</option>').join('')}
+      </select>
+      <span class="info-chip">${posts.length} resultado(s)</span>
+    </div>
+    ${posts.length===0?`<div class="empty-state" style="padding:64px"><div style="font-size:40px;opacity:.3">📭</div><p class="text-muted">Nenhuma postagem encontrada</p></div>`:`
+    <div class="card"><div class="card-body" style="padding:0">
+      <table class="table"><thead><tr><th>Mídia</th><th>Legenda</th><th>Cliente</th><th>Conta</th><th>Agendado</th><th>Publicado</th><th>Status</th><th></th></tr></thead>
+      <tbody>${posts.map(p=>{
+        const client=getClient(p.clientId); const acc=getAccount(p.accountId);
+        return `<tr>
+          <td><div class="post-thumb" style="width:38px;height:38px;font-size:16px;border-radius:8px">${p.mediaUrl&&p.mediaUrl.startsWith('data:')?'<img src="'+p.mediaUrl+'"/>':'<span>'+(p.mediaType==='video'?'🎬':p.mediaType==='stories'?'📱':'🖼️')+'</span>'}</div></td>
+          <td><span class="truncate" style="display:block;max-width:180px">${p.caption||'(sem legenda)'}</span></td>
+          <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar avatar-sm" style="background:${client?.avatarColor||COLORS[0]}">${client?.name[0]||'?'}</div><span>${client?.name||'—'}</span></div></td>
+          <td class="text-muted">@${acc?.username||'?'}</td>
+          <td class="text-dim" style="font-size:12px">${fmtDate(p.scheduledAt)}</td>
+          <td class="text-dim" style="font-size:12px">${p.publishedAt?fmtDate(p.publishedAt):'—'}</td>
+          <td>${statusBadge(p.status)}</td>
+          <td><div style="display:flex;gap:4px">
+            ${p.status==='scheduled'?'<button class="btn btn-ghost btn-sm" onclick="publishNow('+p.id+')">▶</button>':''}
+            ${p.status==='error'?'<button class="btn btn-ghost btn-sm" onclick="showPostError('+p.id+')" title="Ver erro">ℹ️</button>':''}
+            <button class="btn btn-danger btn-sm" onclick="deletePost('+p.id+')">🗑️</button>
+          </div></td>
+        </tr>`;
+      }).join('')}</tbody></table>
+    </div></div>`}
+  </div>`;
+}
+
+// ─── Client Modals ────────────────────────────────────────────────────────────
+window._modalColor = COLORS[0];
+
+function showCreateClientModal() {
+  window._modalColor = COLORS[0];
+  showModal(`<div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Novo Cliente</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div class="avatar avatar-lg" id="preview-avatar" style="background:${COLORS[0]}">?</div>
+        <div>${colorPicker(COLORS[0],'setModalColor')}</div>
+      </div>
+      <div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="c-name" placeholder="Nome do cliente" oninput="var a=document.getElementById('preview-avatar');if(a)a.textContent=this.value[0]?.toUpperCase()||'?'"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">E-mail</label><input class="form-input" id="c-email" type="email" placeholder="email@exemplo.com"/></div>
+        <div class="form-group"><label class="form-label">Telefone</label><input class="form-input" id="c-phone" placeholder="(11) 99999-9999"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-textarea" id="c-notes" placeholder="Notas internas..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="createClient()">Criar cliente</button></div>
+  </div>`);
+}
+
+function setModalColor(color) {
+  window._modalColor = color;
+  const a = document.getElementById('preview-avatar');
+  if (a) a.style.background = color;
+  document.querySelectorAll('.color-dot').forEach(el => {
+    const bg = el.style.backgroundColor || el.style.background;
+    el.classList.toggle('selected', bg === color || el.style.background === color);
+  });
+}
+
+function createClient() {
+  const name = document.getElementById('c-name')?.value.trim();
+  if (!name) { toast('Nome é obrigatório','error'); return; }
+  state.clients.push({ id:state.nextClientId++, ownerId:1, name, email:document.getElementById('c-email')?.value.trim()||null, phone:document.getElementById('c-phone')?.value.trim()||null, notes:document.getElementById('c-notes')?.value.trim()||null, avatarColor:window._modalColor, createdAt:Date.now() });
+  saveDB(); closeModal(); toast('Cliente "'+name+'" criado!'); renderPage();
+}
+
+function showEditClientModal(clientId) {
+  const c = getClient(clientId); if (!c) return;
+  window._modalColor = c.avatarColor||COLORS[0];
+  showModal(`<div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Editar Cliente</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div class="avatar avatar-lg" id="preview-avatar" style="background:${c.avatarColor||COLORS[0]}">${c.name[0].toUpperCase()}</div>
+        <div>${colorPicker(window._modalColor,'setModalColor')}</div>
+      </div>
+      <div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="c-name" value="${c.name}" oninput="var a=document.getElementById('preview-avatar');if(a)a.textContent=this.value[0]?.toUpperCase()||'?'"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">E-mail</label><input class="form-input" id="c-email" type="email" value="${c.email||''}"/></div>
+        <div class="form-group"><label class="form-label">Telefone</label><input class="form-input" id="c-phone" value="${c.phone||''}"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações</label><textarea class="form-textarea" id="c-notes">${c.notes||''}</textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="updateClient(${clientId})">Salvar</button></div>
+  </div>`);
+}
+
+function updateClient(clientId) {
+  const c = getClient(clientId); if(!c) return;
+  const name = document.getElementById('c-name')?.value.trim();
+  if (!name) { toast('Nome é obrigatório','error'); return; }
+  c.name=name; c.email=document.getElementById('c-email')?.value.trim()||null;
+  c.phone=document.getElementById('c-phone')?.value.trim()||null;
+  c.notes=document.getElementById('c-notes')?.value.trim()||null;
+  c.avatarColor=window._modalColor;
+  saveDB(); closeModal(); toast('Cliente atualizado!'); renderPage();
+}
+
+function confirmDeleteClient(clientId) {
+  const c = getClient(clientId);
+  showModal(`<div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Remover Cliente</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><p class="text-muted">Remover <strong>${c?.name}</strong>? Todas as contas e postagens serão deletadas.</p></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-danger" onclick="deleteClient(${clientId})">Remover</button></div>
+  </div>`);
+}
+
+function deleteClient(clientId) {
+  state.clients=state.clients.filter(c=>c.id!==clientId);
+  state.accounts=state.accounts.filter(a=>a.clientId!==clientId);
+  state.posts=state.posts.filter(p=>p.clientId!==clientId);
+  saveDB(); closeModal(); toast('Cliente removido!'); navigate('clients');
+}
+
+// ─── Account actions ──────────────────────────────────────────────────────────
+function toggleAccountStatus(accountId) {
+  const acc = getAccount(accountId); if(!acc) return;
+  acc.isActive = acc.isActive==='yes'?'no':'yes';
+  saveDB(); toast('Conta '+(acc.isActive==='yes'?'ativada':'desativada')+'!'); renderPage();
+}
+
+function confirmDisconnectAccount(accountId) {
+  const acc = getAccount(accountId);
+  showModal(`<div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Desconectar Conta</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><p class="text-muted">Desconectar <strong>@${acc?.username}</strong>? Postagens agendadas ficarão com erro.</p></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-danger" onclick="disconnectAccount(${accountId})">Desconectar</button></div>
+  </div>`);
+}
+
+function disconnectAccount(accountId) {
+  const acc = getAccount(accountId);
+  state.posts.forEach(p=>{ if(p.accountId===accountId&&p.status==='scheduled'){p.status='error';p.errorMessage='Conta desconectada';} });
+  state.accounts=state.accounts.filter(a=>a.id!==accountId);
+  saveDB(); closeModal(); toast('@'+(acc?.username||'conta')+' desconectado!'); renderPage();
+}
+
+// ─── Publish via Meta Graph API ───────────────────────────────────────────────
+async function publishNow(postId) {
+  const post = state.posts.find(p=>p.id===postId);
+  if (!post||post.status!=='scheduled') return;
+
+  const acc = getAccount(post.accountId);
+  if (!acc) { toast('Conta não encontrada','error'); return; }
+
+  toast('⚡ Publicando via Meta Graph API...','info');
+
+  try {
+    const fullCaption = [post.caption,post.hashtags].filter(Boolean).join('\n\n');
+    const igUserId = acc.instagramUserId;
+    const token = acc.accessToken;
+
+    // Step 1: Create container
+    const cp = new URLSearchParams({ access_token: token });
+    if (post.mediaType==='video') { cp.set('media_type','REELS'); cp.set('video_url',post.mediaUrl); cp.set('caption',fullCaption); }
+    else if (post.mediaType==='stories') { cp.set('media_type','STORIES'); cp.set('image_url',post.mediaUrl); }
+    else { cp.set('image_url',post.mediaUrl); cp.set('caption',fullCaption); }
+
+    const cRes = await fetch(GRAPH_BASE+'/'+igUserId+'/media',{method:'POST',body:cp});
+    const cData = await cRes.json();
+    if (!cData.id) throw new Error(cData.error?.message||'Falha ao criar container');
+
+    // Step 2: Publish
+    const pp = new URLSearchParams({ access_token:token, creation_id:cData.id });
+    const pRes = await fetch(GRAPH_BASE+'/'+igUserId+'/media_publish',{method:'POST',body:pp});
+    const pData = await pRes.json();
+    if (!pData.id) throw new Error(pData.error?.message||'Falha ao publicar');
+
+    post.status='published'; post.publishedAt=Date.now(); post.instagramPostId=pData.id;
+    toast('✅ Publicado! Instagram ID: '+pData.id);
+  } catch(err) {
+    post.status='error'; post.errorMessage=err.message;
+    toast('❌ Erro: '+err.message,'error');
+  }
+  saveDB(); renderPage();
+}
+
+function showPostError(postId) {
+  const post = state.posts.find(p=>p.id===postId); if(!post) return;
+  showModal(`<div class="modal">
+    <div class="modal-header"><h3 class="modal-title">❌ Erro na Postagem</h3><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="modal-body"><p style="color:var(--red);line-height:1.6">${post.errorMessage||'Erro desconhecido'}</p><p class="text-dim text-xs mt-4">Post ID: #${post.id}</p></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Fechar</button></div>
+  </div>`);
+}
+
+function deletePost(postId) {
+  state.posts=state.posts.filter(p=>p.id!==postId);
+  saveDB(); toast('Postagem removida!'); renderPage();
+}
+
+// ─── Render page ──────────────────────────────────────────────────────────────
+function renderPage() {
+  const content = document.getElementById('page-content');
+  if (!content) return;
+  switch(currentPage) {
+    case 'dashboard': content.innerHTML=renderDashboard(); break;
+    case 'clients': content.innerHTML=renderClients(); break;
+    case 'clientdetail': content.innerHTML=renderClientDetail(pageParams.clientId); break;
+    case 'newpost': content.innerHTML=renderNewPost(); break;
+    case 'calendar': content.innerHTML=renderCalendar(); break;
+    case 'history': content.innerHTML=renderHistory(); break;
+    default: content.innerHTML='<p>Página não encontrada</p>';
+  }
+}
+
+// ─── Background worker ────────────────────────────────────────────────────────
+function runWorker() {
+  const now = Date.now();
+  let changed = 0;
+  state.posts.forEach(p => {
+    if (p.status==='scheduled' && p.scheduledAt<=now) {
+      // In production this would hit the real API. Here we mark as pending real publish.
+      // Auto-publish will happen via publishNow when the worker fires
+      publishNow(p.id);
+      changed++;
+    }
+  });
+}
+setInterval(runWorker, 60000);
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+// Check if returning from OAuth
+checkOAuthResult();
+
+if (state.user) {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name').textContent = state.user.name;
+  document.getElementById('user-avatar').textContent = state.user.name[0];
+  navigate('dashboard');
+}
+</script>
+</body>
+</html>
