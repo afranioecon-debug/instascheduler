@@ -27,7 +27,7 @@ No painel do Netlify → **Site Settings → Environment Variables**, adicione:
 | Variável         | Valor                          |
 |------------------|-------------------------------|
 | `META_APP_ID`    | `1707170137303501`             |
-| `META_APP_SECRET`| `0467b00ecb00000dfd4be98dfa7cda75` |
+| `META_APP_SECRET` | `sua-chave-secreta-aqui` |
 
 ### 4. Configure o Redirect URI no Meta
 - Acesse https://developers.facebook.com → seu App
